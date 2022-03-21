@@ -1,9 +1,6 @@
 package com.zr.zrdeweb.system.model;
 
 import java.io.Serializable;
-//test
-//test
-//test
 
 public class City implements Serializable {
     private Integer id;
