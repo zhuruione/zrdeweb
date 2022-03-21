@@ -39,10 +39,10 @@ public class UserLogin {
             return null;
         } catch (UnknownAccountException e) {
             //找不到用户名错误
-            return "用户名不存在";
+            return "用户名不存在!";
         }catch (IncorrectCredentialsException e) {
             //密码错误
-            return "密码错误";
+            return "密码错误!";
         }
     }
 
