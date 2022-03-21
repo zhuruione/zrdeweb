@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=false"/>
+<script src="/webjars/jquery/3.5.0/jquery.js"></script>
+<link href="/css/zui.min.css" rel="stylesheet">
+<script src="/js/zui.min.js"></script>
+<link href="/lib/uploader/zui.uploader.min.css" rel="stylesheet">
+<script src="/lib/uploader/zui.uploader.min.js"></script>
+<script src="/js/zr/fileindex.js"></script>
+<style>
+    html, body {
+        width: 100%;
+        height: 100%
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <title>我的文件</title>
+</head>
+<body>
+<div class="list-group" style="position: relative;top: 45px">
+    <!--文件夹-->
+    <span th:each="file:${files}" th:onclick="'dirin(\''+${file.getName().hashCode()}+'\')'"
+          th:id="'d_'+${file.getName().hashCode()}" class="maindir">
+         <a th:if="${file.isDirectory()}"
+            th:id="${'dirhref_'+file.getName().hashCode()}"
+            th:href="@{filedown(name=${file.getName()},path=${file.toString().substring(file.toString().indexOf(username)+username.length()+1)})}"
+            class="list-group-item" data-toggle="collapse">
+        <p th:text="${file.getName()}" th:id="${'dirnameid_'+file.getName().hashCode()}" hidden></p>
+        <p th:text="${file.toString()}" th:id="${'dirpathid_'+file.getName().hashCode()}" hidden></p>
+        <p class="list-group-item-text text-muted"
+           th:id="${'dirsmallname_'+file.getName().hashCode()}"
+           th:if="${file.getName().length()<12}"
+           th:text="${file.getName()}" style="position: absolute;left: 50px;top: 15px;font-size: 17px"></p>
+        <p class="list-group-item-text text-muted"
+           th:id="${'dirsmallname_'+file.getName().hashCode()}"
+           th:if="${file.getName().length()>=12}"
+           th:text="${file.getName().substring(0,12)+'...'}"
+           style="position: absolute;left: 50px;top: 17px;font-size: 15px"></p>
+        <img th:if="${file.isDirectory()}" src="/image/fileimg/dir.png" height="30px">
+    </a>
+    </span>
+
+    <a th:each="file:${files}">
+        <!--上面-->
+        <span th:if="${file.isFile()}" th:id="'f_'+${file.getName().hashCode()}"
+              th:href="${'#id_'+file.getName().hashCode()}"
+              th:class="${'mainspan list-group-item fileclassid_'+file.getName().hashCode()}"
+              data-toggle="collapse" disabled="">
+            <!--文件图标-->
+            <p th:text="${T(com.zr.zrdeweb.system.utils.FileTypeUtils).getfiletype(file.getName())}" hidden></p>
+            <img th:if="${file.isFile()}"
+                 th:src="${T(com.zr.zrdeweb.system.utils.FileTypeUtils).getfiletype(file.getName())}" height="30px">
+
+            <!--文件名称-->
+            <p class="list-group-item-text text-muted"
+               th:id="${'smallname_'+file.getName().hashCode()}"
+               th:if="${file.getName().length()<15}"
+               th:text="${file.getName()}"
+               style="position: absolute;left: 50px;top: 15px;font-size: 17px"></p>
+            <p class="list-group-item-text text-muted"
+               th:id="${'smallname_'+file.getName().hashCode()}"
+               th:if="${file.getName().length()>=15}"
+               th:text="${file.getName().substring(0,7)+'...'+file.getName().substring(file.getName().length()-7,file.getName().length())}"
+               style="position: absolute;left: 50px;top: 17px;font-size: 15px"></p>
+            <!--文件大小-->
+            <p class="list-group-item-text text-muted" th:if="${file.isFile()}"
+               style="position: absolute;left: 75%;bottom: 2px; font-size: xx-small"
+               th:text="${'文件大小: '+T(com.zr.zrdeweb.system.utils.FileTypeUtils).getfilesize(file.length())}"></p>
+        </span>
+        <!--上下文菜单-->
+
+        <!--下面-->
+        <div th:if="${file.isFile()}" th:class="${'zr collapse fileclassid_'+file.getName().hashCode()}"
+             th:id="${'id_'+file.getName().hashCode()}">
+            <div class="panel-body" style="background-color: #eaeaec">
+                <style>
+                    .filenamespan {
+                        color: #2467ec;
+                        font-size: 13px;
+                        text-align: center;
+                    }
+                </style>
+                <span class="filenamespan">文件名称:</span>
+                <span th:id="${'filename_'+file.getName().hashCode()}"
+                      th:text="${file.getName().substring(0,file.getName().lastIndexOf('.'))}"></span><br>
+                <span class="filenamespan">文件类型:</span>
+                <span th:id="${'typeid_'+file.getName().hashCode()}"
+                      th:text="${file.getName().substring(file.getName().lastIndexOf('.')+1,file.getName().length())}"></span><br>
+
+                <!--文件信息-->
+                <p th:text="${file.toString()}" th:id="${'pathid_'+file.getName().hashCode()}" hidden></p>
+                <p th:text="${file.getName()}" th:id="${'nameid_'+file.getName().hashCode()}" hidden></p>
+                <a th:href="@{filedown(name=${file.getName()},path=${file.toString().substring(file.toString().indexOf(username)+username.length()+1)})}">
+                    <span th:id="${'filedownid_'+file.getName().hashCode()}">下载</span>
+                </a>
+                <a th:id="${'filedelectid_'+file.getName().hashCode()}"
+                   th:onclick="'delectfile(\''+${file.getName().hashCode()}+'\')'">删除</a>
+                <a th:id="${'filerenameid_'+file.getName().hashCode()}"
+                   th:onclick="'rename(\''+${file.getName().hashCode()}+'\')'">重命名</a>
+            </div>
+        </div>
+    </a>
+    <!--//确认删除对话框-->
+    <div class="modal fade" id="willdelectfile">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">关闭</span></button>
+                    <h4 class="modal-title">警告</h4>
+                </div>
+                <div class="modal-body">
+                    <p>确认删除这个文件？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="delectfiletrue">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--重命名对话框-->
+    <div class="modal fade" id="willrename">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">关闭</span></button>
+                    <h4 class="modal-title">文件重命名</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea rows="3" cols="60" id="oldname" style="width: 100%;outline: none;border: 0"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="renametrue">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <br>
+    <br>
+    <br>
+    <!--凑空格-->
+</div>
+<div style="position: fixed;top: 0;width: 100%;height:45px;background-color: #e6f8ff;box-shadow:#ceced0  1px 1px 5px 1px ;">
+    <ol class="breadcrumb">
+        <li><a href="/file/userfiles"><i class="icon icon-home"></i>主页</a></li>
+        <li th:each=" dir:${dirlist}"><a th:text="${dir.dirname}" th:href="@{/file/userfiles(dir=${dir.dirpath})}"></a>
+        </li>
+    </ol>
+</div>
+
+<div id='uploader' class="uploader" data-ride="uploader" data-url="/file/upload"
+     style="position: fixed;bottom: -20px;width: 100%;">
+    <div class="uploader-message text-center">
+        <div class="content"></div>
+        <button type="button" class="close">×</button>
+    </div>
+    <div class="uploader-files file-list file-list-lg" data-drag-placeholder="请拖拽文件到此处"
+         style="background-color: #e6f8ff"></div>
+    <div class="uploader-actions">
+        <div class="uploader-status pull-right text-muted"></div>
+        <button type="button" class="btn btn-link uploader-btn-browse"><i class="icon icon-plus"></i> 选择文件</button>
+        <button type="button" class="btn btn-link uploader-btn-start"><i class="icon icon-cloud-upload"></i> 开始上传
+        </button>
+    </div>
+</div>
+<script>
+    //上传文件
+    $('#uploader').uploader({
+        url: '/file/upload',
+        chunk_size: "0",
+        removeUploaded: "true",
+        max_retries: "0",
+        deleteActionOnDone: "true",
+        lang: 'zh_cn',
+        animation: 'scale',
+        multipart_params: {
+            dir: "[[${dir}]]"
+        }
+    });
+</script>
+
+
+</body>
+</html>

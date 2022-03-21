@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zr.zrdeweb.system.dao.UserzhangdaninfMapper">
+  <resultMap id="BaseResultMap" type="com.zr.zrdeweb.system.model.Userzhangdaninf">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="deposit" jdbcType="INTEGER" property="deposit" />
+    <result column="buyclass" jdbcType="VARCHAR" property="buyclass" />
+    <result column="budget" jdbcType="INTEGER" property="budget" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from userzhangdaninf
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.zr.zrdeweb.system.model.Userzhangdaninf">
+    insert into userzhangdaninf (id, deposit, buyclass, 
+      budget)
+    values (#{id,jdbcType=INTEGER}, #{deposit,jdbcType=INTEGER}, #{buyclass,jdbcType=VARCHAR}, 
+      #{budget,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.zr.zrdeweb.system.model.Userzhangdaninf">
+    update userzhangdaninf
+    set deposit = #{deposit,jdbcType=INTEGER},
+      buyclass = #{buyclass,jdbcType=VARCHAR},
+      budget = #{budget,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, deposit, buyclass, budget
+    from userzhangdaninf
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, deposit, buyclass, budget
+    from userzhangdaninf
+  </select>
+</mapper>

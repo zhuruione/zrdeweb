@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<script src="/webjars/jquery/3.5.0/jquery.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<p th:each="l:${files}"><a th:text="${l.getName()}" th:href="@{/ls/play(name=${l.getName()})}"></a></p>
+
+
+</body>
+</html>

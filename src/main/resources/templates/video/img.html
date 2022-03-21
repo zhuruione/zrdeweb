@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta name="viewport" content="width=device-width, initial-scale=0.7,  user-scalable=false"/>
+<script src="/webjars/jquery/3.5.0/jquery.js"></script>
+<link href="/css/zui.min.css" rel="stylesheet">
+<script src="/js/zui.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>随机蛇图</title>
+</head>
+<body >
+<p>本网站为本人使用，如果你不小心进入了这个网站请自觉退出</p>
+<div th:background="${name}" style="position: absolute">
+        <p hidden id="imghref"
+           th:text="@{/video/imgdown(name=${file.getName()},path=${file.toString().substring(file.toString().indexOf('root')+'root'.length()+1)})}"></p>
+        <img th:src="@{${name}}" style="width: 100%;height: auto">
+</div>
+<div style="height: 90%;width: 100%;position: absolute" id="simg">
+</div>
+
+<script>
+    $(function () {
+        $('#simg').contextmenu({
+            items: [{
+                label: '刷新',
+                onClick: function () {
+                    window.location.reload()
+                }
+            }, {
+                label: '下载图片',
+                onClick: function () {
+                    setTimeout(window.open($("#imghref").text()), 500);
+                }
+            }, {
+                label: '下载本站所有资源',
+            }]
+        });
+    })
+</script>
+</body>
+</html>

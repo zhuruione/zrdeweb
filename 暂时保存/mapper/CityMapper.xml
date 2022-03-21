@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zr.zrdeweb.system.dao.CityMapper">
+  <resultMap id="BaseResultMap" type="com.zr.zrdeweb.system.model.City">
+    <id column="Id" jdbcType="INTEGER" property="id" />
+    <result column="Name" jdbcType="VARCHAR" property="name" />
+    <result column="Pid" jdbcType="INTEGER" property="pid" />
+  </resultMap>
+  <select id="getprovince" resultType="com.zr.zrdeweb.system.model.City">
+    select Id, Name, Pid
+    from china
+    where id &lt;&gt; 0 and Pid = #{Pid,jdbcType=INTEGER}
+  </select>
+  <select id="getcitys" resultType="com.zr.zrdeweb.system.model.City">
+    select Id, Name, Pid
+    from china
+    where Pid = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="getareas" resultType="com.zr.zrdeweb.system.model.City">
+    select Id, Name, Pid
+    from china
+    where id like #{id}
+  </select>
+</mapper>

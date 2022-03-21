@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta name="viewport" content="width=device-width, initial-scale=0.6,  user-scalable=false"/>
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+</head>
+<script src="/js/jquery.js"></script>
+<style type="text/css">
+    #logindiv {
+        width: 450px;
+        height: 340px;
+        margin: 0 0 0 -250px;
+        margin-left: -250px;
+        position: relative;
+        left: 50%;
+        top: 230px;
+    }
+    .areacheck{
+        width: 60px;
+    }
+</style>
+<script type="application/javascript">
+    $(function () {
+        //邮箱的正则表达式
+        var emailistrue = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+        //检测并提示邮箱格式是否正确
+        $("#emailinput").change(function () {
+            if (emailistrue.test($("#emailinput").val())) {
+                $("#emailicon").addClass("icon icon-check");
+                $("#emailicon").removeClass("icon icon-times");
+                $("#emailtrue").show();
+            } else {
+                $("#emailicon").removeClass("icon icon-check");
+                $("#emailicon").addClass("icon icon-times");
+                $("#emailtrue").show();
+            }
+        })
+        //发送验证邮件
+        $("#sendemailbutton").click(function () {
+            $.post(
+                "/testemail",
+                {
+                    email: $("#emailinput").val()
+                },
+                function (data, s) {
+                    if (data == "true") {
+                        s = 60;
+                        djs(s, $("#sendemailbutton"));
+                        new $.zui.Messager('邮件已经发送！', {
+                            type: 'success',
+                        }).show();
+                    } else {
+                        $("#emailicon").removeClass("icon icon-check");
+                        $("#emailicon").addClass("icon icon-times");
+                        $("#emailtrue").show();
+                        new $.zui.Messager(data, {
+                            type: 'danger',
+                        }).show();
+                    }
+                }
+            )
+        })
+        //检测验证码格式
+        $("#resetbutton").click(function () {
+            var codecheck = /^[a-zA-Z0-9]{6}$/;
+            if (codecheck.test($("#emailecode").val())) {
+                $.post(
+                    '/user/checkemailecode',
+                    {
+                        email: $("#emailinput").val(),
+                        ecode: $("#emailecode").val()
+                    },
+                    function (data, s) {
+                        if (data == "true") {
+                            $.get(
+                                "/getprovince",
+                                function (data,s){
+                                    //获取省份信息
+                                    $.each(data,function (i){
+                                        $("#province").append("<option value="+data[i].id+">"+data[i].name+"</option>")
+                                    })
+                                    $("#userinf").modal('show');
+                                }
+                            )
+
+                        } else {
+                            new $.zui.Messager(data, {
+                                type: 'danger',
+                            }).show();
+                        }
+                    }
+                )
+            } else {
+                new $.zui.Messager('请输入正确的验证码！', {
+                    type: 'danger',
+                }).show();
+            }
+        })
+        //倒计时方法
+        function djs(s, obt) {
+            if (s > 1) {
+                s--;
+                obt.val(s + "秒后再次发送").attr("disabled", true).css("font-size", "15px");
+                setTimeout(function () {
+                    djs(s, obt);
+                }, 1000)
+            } else {
+                obt.val("再次获取").attr("disabled", false).css("font-size", "20px");
+            }
+        }
+        //获取城市信息
+        $("#province").change(function () {
+            $("#city option").remove();
+            $("#city").append("<option value=\"#\" checked>请选择城市</option>")
+            $("#area option").remove();
+            $("#area").append("<option value=\"#\" checked>请选择地区</option>")
+            $.get(
+                "/getcitys",
+                {
+                    id: $("#province").val()
+                },
+                function (data, s) {
+                    $.each(data, function (i) {
+                        $("#city").append("<option value=" + data[i].id + ">" + data[i].name + "</option>")
+                    })
+                }
+            )
+
+        })
+        //获取地区
+        $("#city").change(function () {
+            $("#area option").remove();
+            $("#area option").append("<option value=\"#\" checked>请选择地区</option>")
+            $.get(
+                "/getareas",
+                {
+                    id: $("#city").val()
+                },
+                function (data, s) {
+                    $.each(data, function (i) {
+                        $("#area").append("<option value=" + data[i].id + ">" + data[i].name + "</option>")
+                    })
+                }
+            )
+        })
+        //查看用户名是否已经被注册
+        $("#inputusername").keyup(function () {
+            $.get(
+                "/checkusername",
+                {
+                    username: $("#inputusername").val()
+                },
+                function (data, s) {
+                    if (data == "true") {
+                        $("#usernameicon").addClass("icon icon-check");
+                        $("#usernameicon").removeClass("icon icon-times");
+                        $("#usernametrue").show();
+                        $('#inputusername').tooltip('destroy');
+                    } else {
+                        $("#usernameicon").addClass("icon icon-times");
+                        $("#usernameicon").removeClass("icon icon-check");
+                        $("#usernametrue").show();
+                        $('[data-toggle="tooltip"]').tooltip({
+                            title: data,
+                            tipClass: 'tooltip-warning',
+                            placement: 'top',
+                            trigger: "manual"
+                        })
+                        // $('#inputusername').tooltip('show');
+                        $('#inputusername').tooltip('show');
+                    }
+                }
+            )
+        })
+        //检测密码
+        $("#inputPassword").change(function () {
+            var checkmima = /^(?![a-zA-z]+$)(?!\d+$)(?![!@#$%^&*]+$)[a-zA-Z\d!@#$%^&*]+$/;
+            if (checkmima.test($("#inputPassword").val())) {
+                $("#passwordicon").addClass("icon icon-check").removeClass("icon icon-times");
+                $("#inputPasswordtrue").show();
+            } else {
+                $("#passwordicon").removeClass("icon icon-check").addClass("icon icon-times");
+                $("#inputPasswordtrue").show();
+            }
+        })
+        //验证二次密码
+        $("#inputPasswordagain").keyup(function (){
+            if($("#inputPasswordagain").val()==$("#inputPassword").val()){
+                $("#inputPasswordagaincont").addClass("icon icon-check").removeClass("icon icon-times");
+                $("#inputPasswordagaintrue").show();
+            }else {
+                $("#inputPasswordagaincont").removeClass("icon icon-check").addClass("icon icon-times");
+                $("#inputPasswordagaintrue").show();
+            }
+            if($("#inputPassword").val()==""){
+                $("#inputPasswordagaintrue").hide();
+            }
+        })
+        //验证电话格式
+        $("#telephone").keyup(function (){
+            var telephonecheck=/^1(?:3\d|4[4-9]|5[0-35-9]|6[67]|7[013-8]|8\d|9\d)\d{8}$/;
+            if(telephonecheck.test($("#telephone").val())){
+                $("#phonetrue").show();
+            }else {
+                $("#phonetrue").hide();
+            }
+        })
+        //发送注册请求
+        $("#submitbutton").click(function (){
+            $.post(
+                "/checkinformation",
+                {
+                     password :$("#inputPasswordagain").val(),
+                     username:$("#inputusername").val(),
+                    user :$("#user").val(),
+                    areaid :$("#area").val(),
+                    phone :$("#telephone").val()
+                },
+                function (data,s){
+                    if(s==400) {
+                        new $.zui.Messager("请检查输入", {
+                            type: 'danger',
+                        }).show();
+                    }else {
+                        if (data != "true") {
+                            new $.zui.Messager(data, {
+                                type: 'danger',
+                            }).show();
+                        } else {
+                            $(location).attr("href", "/index");
+                        }
+                    }
+                }
+            )
+        })
+    })
+
+
+</script>
+<link href="/css/zui.min.css" rel="stylesheet">
+<script src="/js/zui.min.js"></script>
+<body style="background-color: #e9dfea">
+<div class="panel" id="logindiv" >
+    <div class="panel-heading" style="padding: 0 0">
+        <div style="font-size: 20px; text-align: center"><img src="/image/user/registfont.png" style="height: 60px">
+        </div>
+    </div>
+    <div class="container panel-body" style="padding: 25px 25px;">
+        <form method="get" th:action="@{/login}">
+            <div class="input-control has-icon-left has-icon-right">
+                <input id="emailinput" type="email" class="form-control" placeholder="Email" style="height: 40px">
+                <label for="emailinput" class="input-control-icon-left" style="margin-top: 5px"><i
+                        class="icon icon-envelope "></i></label>
+                <label id="emailtrue" for="emailinput" class="input-control-icon-right" style="margin-top: 5px" hidden><i id="emailicon" class="icon icon-check"></i></label>
+            </div>
+            <div class="input-control has-icon-left has-icon-right" style="position: absolute;top: 150px">
+                <input id="emailecode" type="text" class="form-control" maxlength="6" placeholder="验证码"
+                       style="height: 60px;width: 160px;font-size: 30px;color: #3280fc;padding: 3px 3px 3px 37px">
+                <label for="emailecode" class="input-control-icon-left" style="margin-top: 15px"><i
+                        class="icon-comment"></i></label>
+            </div>
+            <div id="sendmaildiv" style="position: absolute;top: 150px;right: 30px;height:60px;width: 150px">
+                <input type="button" id="sendemailbutton"
+                       style="background-color: #f6dfb4;height: 100%;width: 100%;font-size: 20px;font-weight: bold;border-radius: 15px;border: 1px"
+                       value="获取验证码"></input>
+            </div>
+            <div style="position: absolute;top: 230px;right: 0; left : 0;margin :auto;height:55px;width: 400px ">
+                <button id="resetbutton" class="btn" type="button"
+                        style="background-color: #f8ddb2;height: 100%;width: 100%;font-size: 20px;font-weight: bold;border-radius: 15px;border: none">
+                    注册
+                </button>
+            </div>
+            <a th:href="@{/user/login}"
+               style="position: absolute;bottom: 3px;right: 15px;font-size: medium">已有账号？点击登录</a>
+        </form>
+    </div>
+</div>
+<form action="/haschecked/register" method="get" id="userinfform" style="padding-top: 8px">
+    <div class="modal fade" id="userinf" >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">关闭</span></button>
+                    <h4 class="modal-title">完善你的个人信息</h4>
+                </div>
+
+                <div class="modal-body" style="margin-top: 5px " >
+
+                    <!--用户名-->
+                    <div class="input-control has-icon-left has-icon-right">
+                        <input id="inputusername" type="text" class="form-control" placeholder="用户名"
+                               style="height: 40px ;width:500px; " name="username" data-toggle="tooltip">
+                        <label for="inputusername" class="input-control-icon-left" style="padding:3px 0;"><i
+                                class="icon icon-user "></i></label>
+                        <label id="usernametrue" for="inputusername" class="input-control-icon-right"
+                               style="margin-top: 5px" hidden><i id="usernameicon" class="icon icon-check"></i></label>
+                    </div>
+                    <!--密码-->
+                    <div class="input-control has-icon-left" style="padding-top: 10px">
+                        <input id="inputPassword" type="password" class="form-control " placeholder="密码"
+                               style="height: 40px ;width:500px " data-toggle="tooltip">
+                        <label for="inputPassword" class="input-control-icon-left" style="padding:15px 0;"><i
+                                class="icon icon-lock"></i></label>
+                        <label id="inputPasswordtrue" for="inputPassword" class="input-control-icon-right"
+                               style="margin-top: 17px" hidden><i id="passwordicon"></i></label>
+                    </div>
+                    <!--    确认密码-->
+                    <div class="input-control has-icon-left" style="padding-top: 8px;padding-bottom: 10px">
+                        <input id="inputPasswordagain" type="password" class="form-control " placeholder="确认密码"
+                               name="password" style="height: 40px ;width:500px ">
+                        <label for="inputPasswordagain" class="input-control-icon-left" style="padding:13px 0;"><i
+                                class="icon icon-lock"></i></label>
+                        <label id="inputPasswordagaintrue" for="inputPasswordagain" class="input-control-icon-right"
+                               style="margin-top: 17px"><i id="inputPasswordagaincont"></i></label>
+                    </div>
+                    <!--设置住址-->
+                    <div class="input-group" style="width: available">
+                        <span class="input-group-addon" style="width: 70px">地址</span>
+                        <select class="form-control areacheck" id="province" style="width: 143px;">
+                            <option value="#" checked>请选择省份</option>
+                        </select>
+                        <span class="input-group-addon fix-border fix-padding"></span>
+                        <select class="form-control areacheck" id="city" style="width: 143px;">
+                            <option value="#" checked>请选择城市</option>
+                        </select>
+                        <span class="input-group-addon fix-border fix-padding"></span>
+                        <select class="form-control areacheck" id="area" style="width: 143px;" name="areaid">
+                            <option value="#" checked>请选择地区</option>
+                        </select>
+                    </div>
+                    <!--昵称-->
+                    <div class="input-control has-icon-left " style="padding-top: 10px">
+                        <input id="user" type="text" class="form-control" placeholder="个性昵称"
+                               style="height: 40px ;width:500px; " name="user" data-toggle="tooltip">
+                        <label for="user" class="input-control-icon-left" style="padding:13px 0;"><i
+                                class="icon icon-star "></i></label>
+                    </div>
+                    <!--电话-->
+                    <div class="input-control has-icon-left " style="padding-top: 10px">
+                        <input id="telephone" type="text" class="form-control" placeholder="联系电话"
+                               style="height: 40px ;width:500px; " name="phone" data-toggle="tooltip">
+                        <label for="telephone" class="input-control-icon-left" style="padding:13px 0;"><i
+                                class="icon icon-phone "></i></label>
+                        <label id="phonetrue" for="telephone" class="input-control-icon-right"
+                               style="margin-top: 11px" hidden><i id="phonecont" class="icon icon-check"></i></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="submitbutton">确认注册</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=false"/>
+<script src="/webjars/jquery/3.5.0/jquery.js"></script>
+<script src="/dist/chart.js"></script>
+<script src="/dist/chart.esm.js"></script>
+<link href="/css/zui.min.css" rel="stylesheet">
+<script src="/js/zui.min.js"></script>
+<link href="/lib/datetimepicker/datetimepicker.min.css" rel="stylesheet">
+<script src="/lib/datetimepicker/datetimepicker.min.js"></script>
+<script>
+    $(function () {
+        //左侧菜单弹出和收回
+        $("#menubutton").click(function () {
+            $("#left_menu").animate({
+                width: '38%',
+            })
+            $("#top_menu").animate({
+                height: 0
+            })
+            $(".left_menu_options").show(350);
+            $(".head_menu_options").hide();
+        })
+        $("#left_menu_return").click(function () {
+            $("#left_menu").animate({
+                width: 0,
+            })
+            $("#top_menu").animate({
+                height: '7%'
+            })
+            $(".left_menu_options").hide();
+            $(".head_menu_options").show(350);
+        })
+        //获取今日日期
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        $("#head_menu_text").text(month + "月" + day + "日")
+
+        //获取今日账单数据
+        moneymap = '[[${moneymap.daylastmoney}]]';
+        $.get(
+            "/phone/zhangdan/getonedaymoney",
+            {
+                year: year,
+                month: month,
+                day: day
+            },
+            function (data, s) {
+                aca = data;
+            }
+        )
+
+        //添加消费信息对话框
+        $("#moneyinfbutton").click(function () {
+            $("#moneyinf").modal('show')
+        })
+
+    })
+</script>
+<style>
+    html, body {
+        height: 100%;
+        width: 100%;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <title>主页</title>
+</head>
+<body>
+<!--主体内容-->
+<div id="mainbody" style="position: absolute;width: 100%;height: 100%;background-color: #eaeaec;">
+    //今日
+    <div style="position: relative;top: 5%;width: 100%;height: 300px;">
+        <span style="position:relative;left: 10px;font-size: 30px;color: #2aabd2">今日消费: </span>
+        <span style="position:relative;left: 10px;font-size: 30px;color: #2aabd2"
+              th:text="${moneymap.money}"></span><br>
+        <span style="position:relative;left: 10px;font-size: 25px;color: #2aabd2; color: red"
+              th:if="${#maps.containsKey(moneymap,'overdraw')}">已透支: [[${moneymap.overdraw}]]</span>
+        <div style="position: relative;width: 60%;height: 300px;">
+            <canvas id="daymoney" width="400" height="400"></canvas>
+            <script>
+                var ctx = document.getElementById("daymoney");
+                var myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ["已消费", "剩余"],
+                        datasets: [{
+                            data: ['[[${moneymap.money}]]', '[[${moneymap.daylastmoney}]]'],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+
+                            ],
+                            borderColor: [
+                                'rgba(255,99,132,1)',
+                                'rgba(75, 192, 192, 1)',
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                });
+            </script>
+        </div>
+        <div style="position: absolute;top: 0;right: 0;width: 40%;height: 300px;">
+            <br><br><br><br>
+            <font style="font-size: 17px;color: #2beae4">今日剩余:</font><br>
+            <font style="font-size: 25px;color: red" th:text="${moneymap.daylastmoney}"></font><br>
+            <font style="font-size: 17px;color: #2beae4">已支出占比:</font><br>
+            <font style="font-size: 25px;color: red">[[${moneymap.moneyproportion}]]%</font><br>
+            <font style="font-size: 17px;color: #2beae4">最大支出类型:</font><br>
+            <font style="font-size: 25px;color: red">三餐</font>
+        </div>
+    </div>
+    <br>
+    <span>本周已经消费：[[${moneymap.weekmoney}]]</span><br>
+    <span>本月已经消费：[[${moneymap.monthmoney}]]</span>
+    <!--添加信息按钮-->
+    <div id="moneyinfbutton" style="position: fixed; right: 5px;bottom: 5px;width: auto;height: auto">
+        <img src="/image/phone/jiahao.png" style="width: 80px;"/>
+    </div>
+
+
+    <!--添加信息对话框-->
+    <script>
+        $(function () {
+            var date = new Date();
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            $("#inputdata").val(year + "年" + month + "月" + day + "日")
+            $.get(
+                "/phone/zhangdan/getbuyclasses",
+                function (data, s) {
+                    $.each(data, function (i) {
+                        $("#selecttype").append("<option value=" + data[i] + ">" + data[i] + "</option>")
+                    })
+
+                }
+            )
+
+        })
+    </script>
+    <div class="modal fade" id="moneyinf">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">关闭</span></button>
+                    <h4 class="modal-title">新建记录</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="newzd" method="post" action="/phone/zhangdan/putnewdate">
+                        <p>类型</p>
+                        <select name="type" id="selecttype" class="form-control"></select>
+                        <br>
+                        <p>日期</p>
+                        <input name="moneydata" id="inputdata" type="text" class="form-control form-date"
+                               readonly="readonly">
+                        <br>
+                        <div class="input-group" id="input-group-newzd">
+                            <span class="input-group-addon">金额</span>
+                            <input name="money" type="text" class="form-control" placeholder="消费金额">
+                            <span class="input-group-addon fix-border fix-padding"></span>
+                            <select id="zdremark" name="remark" type="text" class="form-control" placeholder="备注">
+                                <option value="早饭">早饭</option>
+                                <option value="午饭">午饭</option>
+                                <option value="晚饭">晚饭</option>
+                            </select>
+                            <script>
+                                $("#selecttype").change(function () {
+                                    if ($("#selecttype").val() == "三餐" || $("#selecttype").val() == "水电费") {
+                                        $("#zdremark").remove()
+                                        $("#input-group-newzd").append("<select id=\"zdremark\" name=\"remark\" type=\"text\" class=\"form-control\" placeholder=\"备注\">")
+                                        if ($("#selecttype").val() == "三餐") {
+                                            $("#zdremark option").remove();
+                                            $("#zdremark").append("<option value=\"早饭\" >早饭</option>")
+                                            $("#zdremark").append("<option value=\"午饭\" >午饭</option>")
+                                            $("#zdremark").append("<option value=\"晚饭\" >晚饭</option>")
+                                        } else if ($("#selecttype").val() == "水电费") {
+                                            $("#zdremark option").remove();
+                                            $("#zdremark").append("<option value=\"水费\" >水费</option>")
+                                            $("#zdremark").append("<option value=\"电费\" >电费</option>")
+                                        }
+                                    } else {
+                                        $("#zdremark").remove()
+                                        $("#input-group-newzd").append("<input id=\"zdremark\" name=\"remark\" type=\"text\" class=\"form-control\" placeholder=\"备注\">")
+                                    }
+                                })
+
+                            </script>
+                        </div>
+                        <br>
+                        <script>
+                            $(".form-date").datetimepicker(
+                                {
+                                    weekStart: 1,
+                                    todayBtn: 1,
+                                    autoclose: 1,
+                                    todayHighlight: 1,
+                                    startView: 2,
+                                    minView: 2,
+                                    forceParse: 0,
+                                    format: "yyyy年mm月dd日",
+                                    language: 'zh-CN'
+                                });
+                        </script>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="$('#newzd').submit()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--顶部菜单-->
+<div id="top_menu"
+     style="position: fixed;top: 0;width: 100%;height: 7%;background-color: #e6f8ff;box-shadow:#ceced0  1px 1px 5px 1px ;">
+    <button id="menubutton" class="icon icon-th-list icon-2x btn top_menu"
+            style="position: relative;top: 5px;border: none;background-color: transparent;outline: none;"></button>
+    <!--顶部菜单显示文本-->
+    <div class="head_menu_options"
+         style="text-align: center;width: 60%;height: 100%;position: absolute;top: 8px;left: 0;right: 0;margin: auto">
+        <p style="top: 30%;font-size: 20px;" id="head_menu_text"></p>
+    </div>
+</div>
+
+
+<!--左侧菜单-->
+<div id="left_menu"
+     style="position: fixed;top: 0;left: 0;width: 0;height: 100%;background-color: #e6f8ff;box-shadow:#ceced0  1px 1px 5px 1px ; ">
+    <div id="left_menu_return" style="position: absolute;left: 30%;bottom: 0px">
+        <img src="/image/phone/return.png" width=50%>
+    </div>
+    <div class="left_menu_options" hidden>
+        <ul style="font-size: medium">
+            <li><a href="#home">主页</a></li>
+            <li><a href="#news">个人中心</a></li>
+            <li><a th:href="@{/phone/zhangdan/historymap}">历史账单明细</a></li>
+            <li><a href="#about">关于作者</a></li>
+            <li><a href="#">隐私条款</a></li>
+            <li><a href="#fa">退出登录</a></li>
+            <li><a th:href="@{/file/userfiles}">小秘密</a></li>
+        </ul>
+        <style>
+            li a:hover {
+                background-color: #555;
+                color: white;
+            }
+
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                width: available;
+            }
+
+            li a {
+                display: block;
+                color: #000;
+                padding: 8px 16px;
+                text-decoration: none;
+            }
+        </style>
+    </div>
+</div>
+</body>
+
+
+</html>

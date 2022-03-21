@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<meta name="viewport" content="width=device-width, initial-scale=0.7,  user-scalable=false"/>
+<script src="/webjars/jquery/3.5.0/jquery.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>测试</title>
+</head>
+<body>
+<video style="position: absolute;top: 30%;width: 100%;height: auto" autoplay  controls>
+    <source th:src="${videopath}" type="video/mp4">
+    <source th:src="${videopath}" type="video/webm">
+    <source th:src="${videopath}" type="video/ogg">
+</video>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zr.zrdeweb.system.dao.ZhangDanMapper">
+  <resultMap id="BaseResultMap" type="com.zr.zrdeweb.system.model.ZhangDan">
+    <result column="userid" jdbcType="INTEGER" property="userid" />
+    <result column="money" jdbcType="REAL" property="money" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="month" jdbcType="INTEGER" property="month" />
+    <result column="day" jdbcType="INTEGER" property="day" />
+    <result column="year" jdbcType="INTEGER" property="year" />
+  </resultMap>
+  <insert id="insert" parameterType="com.zr.zrdeweb.system.model.ZhangDan">
+    insert into zhangdan (userid, money, type,
+      month, day, year,remark)
+    values (#{userid,jdbcType=INTEGER}, #{money,jdbcType=REAL}, #{type,jdbcType=VARCHAR},
+      #{month,jdbcType=INTEGER}, #{day,jdbcType=INTEGER}, #{year,jdbcType=INTEGER}, #{remark,jdbcType=VARCHAR})
+  </insert>
+  <select id="selectAll" resultType="com.zr.zrdeweb.system.model.ZhangDan">
+    select userid, money, type, month, day, year, remark, mainid
+    from zhangdan
+  </select>
+  <select id="selectbyday" parameterType="java.lang.Integer" resultType="com.zr.zrdeweb.system.model.ZhangDan">
+    select  userid, money, type, month, day, year, remark, mainid
+    from zhangdan
+    where  year =#{year,jdbcType=INTEGER} and month =#{month,jdbcType=INTEGER} and  day=#{day,jdbcType=INTEGER} and userid =#{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectbymonth" parameterType="java.lang.Integer" resultType="com.zr.zrdeweb.system.model.ZhangDan">
+    select  userid, money, type, month, day, year, remark, mainid
+    from zhangdan
+    where year =#{year,jdbcType=INTEGER} and month =#{month,jdbcType=INTEGER}  and userid =#{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectbyyear" parameterType="java.lang.Integer" resultType="com.zr.zrdeweb.system.model.ZhangDan">
+    select  userid, money, type, month, day, year, remark, mainid
+    from zhangdan
+    where year =#{year,jdbcType=INTEGER}  and userid =#{id,jdbcType=INTEGER}
+  </select>
+  <select id="delectbyid" parameterType="java.lang.Integer">
+    delete from zhangdan
+    where mainid =#{mainid,jdbcType=INTEGER}
+  </select>
+</mapper>

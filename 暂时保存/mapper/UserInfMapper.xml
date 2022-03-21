@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zr.zrdeweb.system.dao.UserInfMapper">
+    <resultMap id="BaseResultMap" type="com.zr.zrdeweb.system.model.user.UserInf">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="perms" jdbcType="VARCHAR" property="perms"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from userinf
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+    <insert id="insert" parameterType="com.zr.zrdeweb.system.model.user.UserInf">
+        insert into userinf ( username, password,
+                             perms, email)
+        values ( #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
+                #{perms,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="com.zr.zrdeweb.system.model.user.UserInf">
+        update userinf
+        set username = #{username,jdbcType=VARCHAR},
+            password = #{password,jdbcType=VARCHAR},
+            perms    = #{perms,jdbcType=VARCHAR},
+            email    = #{email,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select id, username, password, perms, email
+        from userinf
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select id, username, password, perms, email
+        from userinf
+    </select>
+    <select id="selectByUsername" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select id, username, password, perms, email
+        from userinf
+        where username = #{username,jdbcType=VARCHAR}
+    </select>
+  <select id="selectByEmail" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select id, username, password, perms, email
+    from userinf
+    where email = #{email,jdbcType=VARCHAR}
+  </select>
+
+</mapper>
